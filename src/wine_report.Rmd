@@ -1,0 +1,124 @@
+---
+title: "wine_report"
+author: lana almorabah
+output: html_document
+date: '2022-06-16'
+knit: (function(input, ...) {
+    rmarkdown::render(
+      input,
+      output_dir = "../"
+    )
+  })
+---
+
+
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+install.packages('ggplot2')
+install.packages('dplyr')
+install.packages('tidyverse')
+install.packages('DataExplorer')
+install.packages('corrgram')
+install.packages('here')
+install.packages('reactable')
+here::i_am("individual-assignment-2-lana7am.Rproj")
+```
+
+## MISK-DSI assigment 2
+
+## DATA : Wine Quality dataset 
+
+
+
+| Fixed Acidity        | Most acids involved with wine that are fixed or nonvolatile                                                      |
+|----------------------|------------------------------------------------------------------------------------------------------------------|
+| Volatile Acidity     | Amount of acetic acid in wine                                                                                    |
+| Citric Acid          | Can add ‘freshness’ and flavor to wines.                                                                         |
+| Residual Sugar       | Amount of sugar remaining after fermentation stops                                                               |
+| Chlorides            | Amount of salt in the wine                                                                                       |
+| Free Sulfur Dioxide  | Free Form. Prevents microbial growth and the oxidation of wine                                                   |
+| Total Sulfur Dioxide | Free and bound forms of S02; in low concentrations.                                                              |
+| Density              | Closeness of density to that of water depending on the percent alcohol and sugar content.                        |
+| pH                   | Describes how acidic a wine is on a scale from 0 (very acidic) to 14 (very basic)                                |
+| Sulphites            | Wine additive which can contribute to sulfur dioxide gas (S02) levels. Acts as an antimicrobial and antioxidant. |
+| Alcohol              | the percent alcohol content of the wine (% by volume).                                                           |
+| Quality              | Reviews of wines on a 1-10 scale.                                                                                |
+##EDA
+
+first initiate and download packages 
+
+```{r init}
+library(ggplot2)
+library(dplyr)
+library(here)
+library(reactable)
+```
+
+then load the dataset 
+
+```{r load wine}
+wine_tbl <- read.csv(here::here('data/winequality-red.csv'))
+```
+
+Interactive tables 
+
+```{r reactable, echo=FALSE}
+reactable(wine_tbl)
+```
+
+
+
+applying the glimpse() function to get an overview of our data
+this function allows the features to be displayed vertically while the data can be viewed horizontally 
+
+```{r glimpse wine}
+dplyr::glimpse(wine_tbl)
+```
+
+here I've applied the summary function which is used to produce result summaries of various model fitting functions.
+
+```{r summary, echo=FALSE}
+summary(wine_tbl)
+reactable(wine_tbl)
+```
+
+applying the clean_names function from the janitor package
+```{r clean, echo=FALSE}
+janitor::clean_names(wine_tbl)
+```
+
+to get an overview of the quality of wine in this dataset i used a pie chart graph to display the proportions of each index in the quality category
+
+```{r piechart, echo=FALSE}
+(piechart <- ggplot(wine_tbl, aes( x="",y=quality,fill=factor(quality))) +
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0)+
+  scale_fill_manual(values = c("red", "yellow",
+                               "blue", "orange",
+                               "green","purple")))
+```
+
+here i've used the corrgram() function to find the correlation between all the features
+
+```{r correlation, warning=FALSE}
+corrgram::corrgram(wine_tbl, order = TRUE, upper.panel =NULL)
+```
+
+
+from the graph it can be observed that the features with the highest correlation are:
+  - density and fixed acidity
+  - fixed acidity and citric acid 
+  - free sulfur dioxide and total sulfur dioxide
+
+the previous graph shows that the is a medium-high correlation between the quality of the wine and the alcohol level, therefore i wanted to calculate the average alcohol level for wines with a quality index of 7 and above.
+
+```{r average, warning=FALSE}
+wine_tbl %>% filter(quality > 6 ) %>% pull(alcohol) %>% mean()
+```
+
+##Conclusion
+
+from the EDA we can conclude that there isn't just one feature that effects the quality of the wine drastically.
+rather we can assume that its the combination of multiple features that effects the quality.
